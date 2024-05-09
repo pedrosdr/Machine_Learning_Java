@@ -12,9 +12,12 @@ public class Program
                                 {1.1, 2.1}}
         );
 
-//        print(mat.apply(Math::exp));
+        Matrix mat2 = Matrix.fromArray(
+                new double[][] {{2.2, 5.1, 7.6},
+                                {1.1, 0.3, 8.1}}
+        );
 
-        print(Matrix.random(5, 2));
+        print(mat.matmul(mat2));
     }
 
     public static void print(Object obj)

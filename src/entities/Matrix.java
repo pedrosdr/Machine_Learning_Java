@@ -56,6 +56,24 @@ public class Matrix
         return mat;
     }
 
+    public Matrix matmul(Matrix other)
+    {
+        Matrix mat = new Matrix(nrow, other.ncol);
+        for(int a = 0; a < nrow; a++)
+        {
+            for(int b = 0; b < other.ncol; b++)
+            {
+                double sum = 0;
+                for(int j = 0; j < ncol; j++)
+                {
+                    sum += array[a][j] * other.array[j][b];
+                }
+                mat.array[a][b] = sum;
+            }
+        }
+        return mat;
+    }
+
     @Override
     public String toString()
     {
