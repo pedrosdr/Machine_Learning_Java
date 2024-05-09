@@ -1,5 +1,7 @@
 package entities;
 
+import java.util.function.Function;
+
 public class Matrix
 {
     // Fields
@@ -24,6 +26,19 @@ public class Matrix
     }
 
     // Methods
+    public Matrix apply(Function<Double, Double> func)
+    {
+        Matrix mat = new Matrix(nrow, ncol);
+        for(int i = 0; i < nrow; i++)
+        {
+            for(int j = 0; j < ncol; j++)
+            {
+                mat.array[i][j] = func.apply(array[i][j]);
+            }
+        }
+        return mat;
+    }
+
     @Override
     public String toString()
     {

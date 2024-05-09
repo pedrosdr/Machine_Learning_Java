@@ -12,7 +12,7 @@ public class Program
                                 {1.1, 2.1}}
         );
 
-        print(mat);
+        print(mat.apply(Math::exp));
     }
 
     public static void print(Object obj)
