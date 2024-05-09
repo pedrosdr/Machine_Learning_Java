@@ -25,6 +25,23 @@ public class Matrix
         return mat;
     }
 
+    public static Matrix zeros(int nrow, int ncol)
+    {
+        return new Matrix(nrow, ncol);
+    }
+
+    public static Matrix ones(int nrow, int ncol)
+    {
+        Matrix mat = new Matrix(nrow, ncol);
+        return mat.apply(e -> 1.0);
+    }
+
+    public static Matrix random(int nrow, int ncol)
+    {
+        Matrix mat = new Matrix(nrow, ncol);
+        return mat.apply(e -> Math.random());
+    }
+
     // Methods
     public Matrix apply(Function<Double, Double> func)
     {

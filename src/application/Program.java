@@ -12,7 +12,9 @@ public class Program
                                 {1.1, 2.1}}
         );
 
-        print(mat.apply(Math::exp));
+//        print(mat.apply(Math::exp));
+
+        print(Matrix.random(5, 2));
     }
 
     public static void print(Object obj)
