@@ -7,17 +7,15 @@ public class Program
     public static void main(String[] args)
     {
         Matrix mat = Matrix.fromArray(
-                new double[][] {{1.2, 1.3},
-                                {3.2, 4.5},
-                                {1.1, 2.1}}
+                new double[][] {{1.2, 1.3, 1.1, 7.2},
+                                {3.2, 4.5, 4.5, 1.1},
+                                {1.1, 2.1, 3.3, 9.8},
+                                {5.6, 3.3, 1.2, 9.8}}
         );
 
-        Matrix mat2 = Matrix.fromArray(
-                new double[][] {{2.2, 5.1, 7.6},
-                                {1.1, 0.3, 8.1}}
-        );
+//        mat = Matrix.fromArray(new double[][]{{7.3}});
 
-        print(mat.matmul(mat2));
+        print(mat.inv().matmul(mat));
     }
 
     public static void print(Object obj)
