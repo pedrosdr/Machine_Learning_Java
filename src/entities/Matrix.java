@@ -1,5 +1,11 @@
 package entities;
 
+import application.Program;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Matrix
@@ -43,6 +49,173 @@ public class Matrix
     }
 
     // Methods
+    public void to_csv(String path, String sep)
+    {
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(path)))
+        {
+            for(int j = 0; j < ncol; j++)
+            {
+                writer.write(Integer.toString(j));
+                if(j < ncol - 1)
+                    writer.write(sep);
+            }
+            writer.write("\n");
+
+            for(int i = 0; i < nrow; i++)
+            {
+                for(int j = 0; j < ncol; j++)
+                {
+                    writer.write(Double.toString(array[i][j]));
+                    if(j < ncol - 1)
+                        writer.write(sep);
+                }
+                writer.write("\n");
+            }
+        }
+        catch(IOException ex)
+        {
+            System.out.println("Couldn't write file");
+        }
+    }
+
+    public static Matrix read_csv(String path, String sep)
+    {
+        Matrix mat = null;
+
+        try(BufferedReader reader = new BufferedReader(new FileReader(path)))
+        {
+            reader.readLine();
+            List<String[]> rows = new ArrayList<>();
+            String line = null;
+            while((line = reader.readLine()) != null)
+            {
+                String[] vals = line.split(sep);
+                rows.add(vals);
+            }
+            double[][] array = new double[rows.size()][rows.getFirst().length];
+            for(int i = 0; i < array.length; i++)
+            {
+                for(int j = 0; j < array[0].length; j++)
+                {
+                    array[i][j] = Double.parseDouble(rows.get(i)[j]);
+                }
+            }
+            mat = Matrix.fromArray(array);
+        }
+        catch(IOException ex)
+        {
+            System.out.println("Couldn't read file");
+        }
+        return mat;
+    }
+
+    public Matrix sum(int axis)
+    {
+        return reduce(Double::sum, 0.0, axis);
+    }
+
+    public double sum()
+    {
+        return sum(0).sum(1).array[0][0];
+    }
+
+    public Matrix mean(int axis)
+    {
+        if(axis == 0)
+            return sum(axis).div(shape()[1]);
+        return sum(axis).div(shape()[0]);
+    }
+
+    public double mean()
+    {
+        return mean(0).mean(1).array[0][0];
+    }
+
+    public Matrix reduce(BiFunction<Double, Double, Double> func, double initial, int axis)
+    {
+        if(axis == 0)
+            return reduceRows(this, func, initial);
+        else if(axis == 1)
+            return reduceCols(this, func, initial);
+
+        throw new IllegalArgumentException("Invalid axis");
+    }
+    private Matrix reduceRows(Matrix actual, BiFunction<Double, Double, Double> func, double initial)
+    {
+        Matrix mat = new Matrix(actual.nrow, 1);
+        for(int i = 0; i < actual.nrow; i++)
+        {
+            double accumulator = initial;
+            for(int j = 0; j < actual.ncol; j++)
+            {
+                accumulator = func.apply(accumulator, actual.array[i][j]);
+            }
+            mat.array[i][0] = accumulator;
+        }
+        return mat;
+    }
+
+    private Matrix reduceCols(Matrix actual, BiFunction<Double, Double, Double> func, double initial)
+    {
+        return reduceRows(actual.T(), func, initial).T();
+    }
+
+    public Matrix add(Matrix other)
+    {
+        return operate(other, Double::sum);
+    }
+
+    public Matrix add(double num)
+    {
+        return apply(e -> e + num);
+    }
+
+    public Matrix sub(Matrix other)
+    {
+        return operate(other, (a, b) -> a - b);
+    }
+
+    public Matrix sub(double num)
+    {
+        return apply(e -> e - num);
+    }
+
+    public Matrix mult(Matrix other)
+    {
+        return operate(other, (a, b) -> a * b);
+    }
+
+    public Matrix mult(double num)
+    {
+        return apply(e -> e * num);
+    }
+
+    public Matrix div(Matrix other)
+    {
+        return operate(other, (a, b) -> a / b);
+    }
+
+    public Matrix div(double num)
+    {
+        return apply(e -> e / num);
+    }
+
+    public Matrix operate(Matrix other, BiFunction<Double, Double, Double> func)
+    {
+        if (nrow != other.nrow || ncol != other.ncol)
+            throw new IllegalStateException("Exception in operate: the number of rows and columns must be the same.");
+
+        Matrix mat = new Matrix(nrow, ncol);
+        for(int i = 0; i < nrow; i++)
+        {
+            for(int j = 0; j < ncol; j++)
+            {
+                mat.array[i][j] = func.apply(array[i][j], other.array[i][j]);
+            }
+        }
+        return mat;
+    }
+
     public Matrix loc(int start, int end, int axis)
     {
         if(axis == 0)
@@ -241,20 +414,6 @@ public class Matrix
             }
         }
         return mat;
-    }
-
-    public Matrix applyInPlace(Function<Double, Double> func)
-    {
-        double[][] newArray = new double[nrow][ncol];
-        for(int i = 0; i < nrow; i++)
-        {
-            for(int j = 0; j < ncol; j++)
-            {
-                newArray[i][j] = func.apply(array[i][j]);
-            }
-        }
-        array = newArray;
-        return this;
     }
 
     public Matrix matmul(Matrix other)
