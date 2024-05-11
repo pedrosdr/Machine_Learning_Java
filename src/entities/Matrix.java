@@ -1,6 +1,5 @@
 package entities;
 
-import java.nio.InvalidMarkException;
 import java.util.function.Function;
 
 public class Matrix
@@ -44,6 +43,112 @@ public class Matrix
     }
 
     // Methods
+    public Matrix loc(int start, int end, int axis)
+    {
+        if(axis == 0)
+            return locRows(this, start, end);
+        if(axis == 1)
+            return locCols(this, start, end);
+        throw new IllegalArgumentException("The axis is invalid");
+    }
+
+    public Matrix loc(int[] indexes, int axis)
+    {
+        if(axis == 0)
+            return locRows(this, indexes);
+        if(axis == 1)
+            return locCols(this, indexes);
+        throw new IllegalArgumentException("The axis is invalid");
+    }
+
+    private Matrix locRows(Matrix actual, int[] indexes)
+    {
+        Matrix mat = new Matrix(indexes.length, actual.ncol);
+
+        int ii = 0;
+        for(int i : indexes)
+        {
+            for(int j = 0; j < ncol; j++)
+            {
+                mat.array[ii][j] = actual.array[i][j];
+            }
+            ii++;
+        }
+        return mat;
+    }
+
+    private Matrix locCols(Matrix actual, int[] indexes)
+    {
+        return locRows(actual.T(), indexes).T();
+    }
+
+    private Matrix locRows(Matrix actual, int start, int end)
+    {
+        if(end <= start || start >= actual.ncol || end > actual.nrow)
+            throw new IllegalArgumentException("The split range must be within the matrix");
+
+        Matrix mat = new Matrix(end - start, actual.ncol);
+
+        int ii = 0;
+        for(int i = start; i < end; i++)
+        {
+            for(int j = 0; j < actual.ncol; j++)
+            {
+                mat.array[ii][j] = actual.array[i][j];
+            }
+            ii++;
+        }
+        return mat;
+    }
+
+    private Matrix locCols(Matrix actual, int start, int end)
+    {
+        return locRows(actual.T(), start, end).T();
+    }
+
+    public static Matrix concat(Matrix mat1, Matrix mat2, int axis)
+    {
+        if(axis == 0)
+        {
+            if (mat1.ncol != mat2.ncol)
+                throw new IllegalStateException("Number of columns must be the same for both matrix");
+            return concatRows(mat1, mat2);
+        } else if(axis == 1)
+        {
+            if (mat1.nrow != mat2.nrow)
+                throw new IllegalStateException("Number of rows must be the same for both matrix");
+            return concatCols(mat1, mat2);
+        }
+
+        throw new IllegalArgumentException("The axis is invalid");
+    }
+
+    private static Matrix concatRows(Matrix mat1, Matrix mat2)
+    {
+        Matrix mat = new Matrix(mat1.nrow + mat2.nrow, mat1.ncol);
+        for(int i = 0; i < mat1.nrow; i++)
+        {
+            for(int j = 0; j < mat1.ncol; j++)
+            {
+                mat.array[i][j] = mat1.array[i][j];
+            }
+        }
+
+        for(int i = 0; i < mat2.nrow; i++)
+        {
+            for(int j = 0; j < mat2.ncol; j++)
+            {
+                mat.array[i + mat1.nrow][j] = mat2.array[i][j];
+            }
+        }
+        return mat;
+    }
+
+    private static Matrix concatCols(Matrix mat1, Matrix mat2)
+    {
+        return concatRows(mat1.T(), mat2.T()).T();
+    }
+
     public Matrix inv()
     {
         // 1/det * (matrix.cofactors).T
