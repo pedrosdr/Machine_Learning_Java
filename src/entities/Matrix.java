@@ -49,6 +49,21 @@ public class Matrix
     }
 
     // Methods
+    public Matrix pow(double exp)
+    {
+        return apply(e -> Math.pow(e, exp));
+    }
+
+    public Matrix square()
+    {
+        return pow(2.0);
+    }
+
+    public Matrix sqrt()
+    {
+        return pow(1.0/2.0);
+    }
+
     public void to_csv(String path, String sep)
     {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(path)))

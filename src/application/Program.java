@@ -1,20 +1,30 @@
 package application;
 
 import entities.Matrix;
+import entities.Metrics;
 
 public class Program
 {
     public static void main(String[] args)
     {
-        Matrix x = Matrix.fromArray(
-                new double[][] {{1.3, 4.3, 2.1},
-                                {4.5, 6.7, 3.3},
-                                {2.1, 3.4, 7.8},
-                                {3.3, 8.9, 2.3},
-                                {6.7, 6.4, 1.1}}
-        );
+        Matrix mat = Matrix.read_csv("C:/Users/pedro/Desktop/cars.csv", ";");
+        print(mat);
 
-        print(Matrix.read_csv("C:/Users/pedro/Desktop/file.csv", ","));
+        Matrix x = Matrix.concat(Matrix.ones(mat.shape()[0], 1), mat.loc(0, 1, 1), 1);
+        Matrix y = mat.loc(1,2,1);
+
+        Matrix theta = x.T().matmul(x).inv().matmul(x.T().matmul(y));
+        print(theta);
+
+        Matrix y_pred = x.matmul(theta);
+        print(Matrix.concat(y, y_pred, 1));
+
+        Matrix mat_new = Matrix.concat(mat, y_pred, 1);
+        print(mat_new);
+
+        print(Metrics.r2_score(y, y_pred));
+
+//        mat_new.to_csv("C:/Users/pedro/Desktop/file.csv", ";");
     }
 
     public static void print(Object obj)
