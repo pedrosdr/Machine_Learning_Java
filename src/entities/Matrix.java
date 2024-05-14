@@ -50,6 +50,79 @@ public class Matrix
     }
 
     // Methods
+    public Matrix min(int axis)
+    {
+        if(axis == 0)
+            return minRows(this);
+        else if(axis == 1)
+            return minCols(this);
+
+        throw new IllegalArgumentException("Invalid axis");
+    }
+
+    public double min()
+    {
+        return min(0).min(1).array[0][0];
+    }
+
+    private Matrix minRows(Matrix actual)
+    {
+        double[] doubles = new double[actual.nrow];
+        for(int i = 0; i < actual.nrow; i++)
+        {
+            double min = actual.array[i][0];
+            for(int j = 1; j < actual.ncol; j++)
+            {
+                if(actual.array[i][j] < min)
+                    min = actual.array[i][j];
+            }
+            doubles[i] = min;
+        }
+        double[][] arr = new double[][] {doubles};
+        return Matrix.fromArray(arr).T();
+    }
+
+    private Matrix minCols(Matrix actual)
+    {
+        return minRows(actual.T()).T();
+    }
+
+    public Matrix max(int axis)
+    {
+        if(axis == 0)
+            return maxRows(this);
+        else if(axis == 1)
+            return maxCols(this);
+
+        throw new IllegalArgumentException("Invalid axis");
+    }
+
+    public double max()
+    {
+        return max(0).max(1).array[0][0];
+    }
+
+    private Matrix maxRows(Matrix actual)
+    {
+        double[] doubles = new double[actual.nrow];
+        for(int i = 0; i < actual.nrow; i++)
+        {
+            double max = actual.array[i][0];
+            for(int j = 1; j < actual.ncol; j++)
+            {
+                if(actual.array[i][j]> max)
+                    max = actual.array[i][j];
+            }
+            doubles[i] = max;
+        }
+        double[][] arr = new double[][] {doubles};
+        return Matrix.fromArray(arr).T();
+    }
+
+    private Matrix maxCols(Matrix actual)
+    {
+        return maxRows(actual.T()).T();
+    }
 
     public Matrix sd(int axis)
     {
