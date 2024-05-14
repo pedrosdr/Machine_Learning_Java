@@ -2,6 +2,7 @@ package entities;
 
 import application.Program;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,62 @@ public class Matrix
     }
 
     // Methods
+
+    public Matrix sd(int axis)
+    {
+        if(axis == 0)
+            return varRows(this).sqrt();
+        else if(axis == 1)
+            return varCols(this).sqrt();
+
+        throw new IllegalArgumentException("Invalid axis");
+    }
+    public Matrix var(int axis)
+    {
+        if(axis == 0)
+            return varRows(this);
+        else if(axis == 1)
+            return varCols(this);
+
+        throw new IllegalArgumentException("Invalid axis");
+    }
+
+    public double var()
+    {
+        double sum = 0.0;
+        for (int i = 0; i < nrow; i++)
+        {
+            for(int j = 0; j < ncol; j++)
+            {
+                sum += Math.pow(array[i][j] - mean(),2);
+            }
+        }
+        return sum / (nrow*ncol-1);
+    }
+
+    public double sd()
+    {
+        return Math.sqrt(var());
+    }
+
+    private Matrix varRows(Matrix actual)
+    {
+        double[] vars = new double[actual.nrow];
+        for(int i = 0; i < actual.nrow; i++)
+        {
+            // Sum( (x-x_)^2 ) / (n-1)
+            Matrix row = actual.loc(i,i+1,0);
+            vars[i] = row.sub(row.mean()).square().sum() / (row.ncol-1);
+        }
+        double[][] array = new double[][] {vars};
+        return Matrix.fromArray(array).T();
+    }
+
+    private Matrix varCols(Matrix actual)
+    {
+        return varRows(actual.T()).T();
+    }
+
     public Matrix pow(double exp)
     {
         return apply(e -> Math.pow(e, exp));
@@ -272,7 +329,7 @@ public class Matrix
 
     private Matrix locRows(Matrix actual, int start, int end)
     {
-        if(end <= start || start >= actual.ncol || end > actual.nrow)
+        if(end <= start || start >= actual.nrow || end > actual.nrow)
             throw new IllegalArgumentException("The split range must be within the matrix");
 
         Matrix mat = new Matrix(end - start, actual.ncol);
