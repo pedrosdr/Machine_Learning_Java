@@ -2,29 +2,33 @@ package application;
 
 
 import entities.Matrix;
+import entities.Metrics;
 import entities.activations.Activations;
 import entities.costs.Costs;
-import entities.models.LogisticRegression;
+import entities.layers.Layer;
+import entities.models.NeuralNetwork;
+
+import java.util.Arrays;
 
 public class Program
 {
     public static void main(String[] args)
     {
-//        Matrix base = Matrix.read_csv("C:/Users/pedro/Desktop/iris.csv", ";");
-//        Matrix x = base.loc(0,4,1);
-//        Matrix y = base.loc(4,5,1);
-//
-//        LogisticRegression lr = new LogisticRegression(1000, 0.001);
-//        lr.fit(x, y);
-//        Matrix y_new = lr.predict(x);
-//
-//        Matrix concatenado = Matrix.concat(y, y_new, 1);
-//        print(concatenado);
+        Matrix base = Matrix.read_csv("C:/Users/pedro/Desktop/sample.csv", ";");
+        Matrix x = base.loc(0,3,1);
+        Matrix y = base.loc(3,4,1);
 
-        Matrix a = Matrix.ones(10, 1).mult(5.0);
-        Matrix y = Matrix.ones(10, 1).mult(3.0);
+        Layer l1 = new Layer(3);
+        Layer l2 = new Layer(3, Activations::sigmoid);
+        Layer l3 = new Layer(3, Activations::sigmoid);
+        Layer l4 = new Layer(1, Activations::linear);
 
-        print(Costs.derivative(a, y, Costs::mse));
+        NeuralNetwork nn = new NeuralNetwork(Arrays.asList(l1, l2, l3, l4));
+        nn.fit(x, y, 0.001, 50000);
+
+        print(Matrix.concat(y, nn.predict(x), 1));
+        print(Metrics.mse(y, nn.predict(x)));
+        print(Metrics.r2_score(y, nn.predict(x)));
     }
 
     public static void print(Object obj)
