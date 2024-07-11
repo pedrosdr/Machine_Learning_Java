@@ -12,7 +12,9 @@ import java.util.List;
 public class NeuralNetwork
 {
     // fields
-    private List<Layer> layers = new ArrayList<>();
+    private Layer first;
+    private Layer last;
+    private int numberOfLayers;
     private CostFunction cost = Costs::mse;
 
     // constructors
@@ -25,7 +27,6 @@ public class NeuralNetwork
     public NeuralNetwork(List<Layer> layers, CostFunction cost)
     {
         this.cost = cost;
-        this.layers = new ArrayList<>();
 
         for(Layer layer : layers)
             addLayer(layer);
@@ -34,18 +35,25 @@ public class NeuralNetwork
     // methods
     public void addLayer(Layer layer)
     {
-        if(!layers.isEmpty())
-            layer.setPrevious(layers.getLast());
-        layers.add(layer);
+        if(first == null)
+            first = layer;
+        else {
+            layer.setPrevious(last);
+            last.setNext(layer);
+            layer.setWeights(Matrix.random(last.getUnits(), layer.getUnits()));
+        }
+        last = layer;
+        numberOfLayers++;
     }
 
     public void feedforward(Matrix x)
     {
-        layers.getFirst().setA(x);
+        first.setA(x);
 
-        for(int i = 1; i < layers.size(); i++)
+        Layer layer = first;
+        for(int i = 1; i < numberOfLayers; i++)
         {
-            Layer layer = layers.get(i);
+            layer = layer.getNext();
             layer.setZ(layer.getPrevious().getA().matmul(layer.getWeights()));
             layer.setA(layer.getActivation().call(layer.getZ()));
         }
@@ -53,10 +61,9 @@ public class NeuralNetwork
 
     public void backpropagate(Matrix y, double lr)
     {
-        for(int i = layers.size()-1; i > 0; i--)
+        Layer layer = last;
+        for(int i = 1; i < numberOfLayers; i++)
         {
-            Layer layer = layers.get(i);
-
             if(layer.getNext() == null)
                 layer.setDelta(Costs.derivative(layer.getA(), y, cost).mult(Activations.derivative(layer.getZ(), layer.getActivation())));
             else
@@ -64,6 +71,8 @@ public class NeuralNetwork
 
             Matrix gradients = layer.getPrevious().getA().T().matmul(layer.getDelta());
             layer.setWeights(layer.getWeights().sub(gradients.mult(lr)));
+
+            layer = layer.getPrevious();
         }
     }
 
@@ -75,7 +84,7 @@ public class NeuralNetwork
 
     public Matrix predict(Matrix x)
     {
-        return layers.getLast().getA();
+        return last.getA().apply(e->e);
     }
 
     public NeuralNetwork fit(Matrix x, Matrix y, double lr, int epochs)

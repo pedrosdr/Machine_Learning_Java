@@ -35,13 +35,15 @@ public class Layer
     }
 
     public void setPrevious(Layer previous) {
-        previous.next = this;
         this.previous = previous;
-        setWeights(Matrix.random(previous.getUnits(), getUnits()));
     }
 
     public Layer getNext() {
         return next;
+    }
+
+    public void setNext(Layer next) {
+        this.next = next;
     }
 
     public Matrix getA() {
