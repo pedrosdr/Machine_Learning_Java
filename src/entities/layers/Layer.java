@@ -15,6 +15,7 @@ public class Layer
     private ActivationFunction activation;
     private Layer next;
     private Layer previous;
+    private Matrix bias;
 
     // constructors
     public Layer(int units)
@@ -30,6 +31,15 @@ public class Layer
     }
 
     // properties
+
+    public void setBias(Matrix bias) {
+        this.bias = bias;
+    }
+
+    public Matrix getBias() {
+        return bias;
+    }
+
     public Layer getPrevious() {
         return previous;
     }

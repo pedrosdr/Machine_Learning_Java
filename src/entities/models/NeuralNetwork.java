@@ -6,6 +6,7 @@ import entities.costs.CostFunction;
 import entities.costs.Costs;
 import entities.layers.Layer;
 
+import javax.management.MBeanAttributeInfo;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,8 @@ public class NeuralNetwork
     private Layer last;
     private int numberOfLayers;
     private CostFunction cost = Costs::mse;
+    private Matrix ones;
+    private Matrix transposedOnes;
 
     // constructors
     public NeuralNetwork() {}
@@ -54,7 +57,11 @@ public class NeuralNetwork
         for(int i = 1; i < numberOfLayers; i++)
         {
             layer = layer.getNext();
-            layer.setZ(layer.getPrevious().getA().matmul(layer.getWeights()));
+
+            if(layer.getBias() == null)
+                layer.setBias(Matrix.random(1, layer.getUnits()));
+
+            layer.setZ(layer.getPrevious().getA().matmul(layer.getWeights()).add(ones.matmul(layer.getBias())));
             layer.setA(layer.getActivation().call(layer.getZ()));
         }
     }
@@ -71,6 +78,7 @@ public class NeuralNetwork
 
             Matrix gradients = layer.getPrevious().getA().T().matmul(layer.getDelta());
             layer.setWeights(layer.getWeights().sub(gradients.mult(lr)));
+            layer.setBias(layer.getBias().sub(transposedOnes.matmul(layer.getDelta()).mult(lr)));
 
             layer = layer.getPrevious();
         }
@@ -78,6 +86,11 @@ public class NeuralNetwork
 
     public void trainOnBatch(Matrix x, Matrix y, double lr)
     {
+        if(ones == null || x.shape()[0] != ones.shape()[0]) {
+            ones = Matrix.ones(x.shape()[0], 1);
+            transposedOnes = ones.T();
+        }
+
         feedforward(x);
         backpropagate(y, lr);
     }
@@ -89,6 +102,9 @@ public class NeuralNetwork
 
     public NeuralNetwork fit(Matrix x, Matrix y, double lr, int epochs)
     {
+        ones = Matrix.ones(x.shape()[0], 1);
+        transposedOnes = ones.T();
+
         for(int i = 0; i < epochs; i++)
             trainOnBatch(x, y, lr);
 
