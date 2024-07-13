@@ -27,7 +27,7 @@ public class LogisticRegression
         for(int i = 0; i < epochs; i++)
         {
             Matrix grad = x.T().matmul(Activations.sigmoid(x.matmul(theta)).sub(y)).mult(2.0/x.shape()[0]);
-            theta = theta.sub(grad.mult(0.01));
+            theta = theta.sub(grad.mult(lr));
         }
 
         return this;
